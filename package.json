@@ -1,0 +1,64 @@
+{
+  "name": "apex-tire-diagram",
+  "version": "0.1.0",
+  "description": "The Apex truck wheel diagram (2D map + optional 3D tanker rig), shared by the garage app and the office dashboard.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shawket4/apex-tire-diagram.git"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./3d": {
+      "types": "./dist/3d.d.ts",
+      "import": "./dist/3d.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check:dist": "npm run build && git diff --exit-code -- dist && test -z \"$(git status --porcelain -- dist)\""
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.4"
+  },
+  "peerDependencies": {
+    "@react-three/drei": "^10.7.0",
+    "@react-three/fiber": "^9.6.0",
+    "lucide-react": ">=0.451.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": ">=0.172.0"
+  },
+  "devDependencies": {
+    "@react-three/drei": "10.7.7",
+    "@react-three/fiber": "9.6.1",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "0.185.1",
+    "jsdom": "^27.0.1",
+    "lucide-react": "0.451.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "three": "0.172.0",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}
