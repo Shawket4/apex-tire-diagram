@@ -9,8 +9,10 @@
  *     physically occluded from every side angle; overhead-with-body-hidden is
  *     the only view where both have equal, stable click targets.
  *   - singles/spares just select (nothing occludes them).
- *   - closing the inspector → back to the solved full-truck fit. Clicking
- *     empty space does NOT deselect: it used to throw away a half-filled form.
+ *   - clicking empty space, or Esc, steps back out to the whole truck
+ *     (pairView.ts). It does NOT deselect — that used to throw away a
+ *     half-filled form — the wheel stays chosen; choosing a wheel goes back in.
+ *     Closing the inspector (deselecting) also returns to the full-truck fit.
  *   - camera glides on WALL-CLOCK time (rAF-starved webviews stall per-frame
  *     damping mid-glide).
  *
@@ -30,6 +32,7 @@ import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, Instances, Instance, OrbitControls, Outlines, RoundedBox, ContactShadows, Environment, Lightformer, Grid } from "@react-three/drei";
 
+import { escapeStepsOut, usePairView } from "./pairView.js";
 import type { DiagramAxle as ChassisAxle, DiagramPosition as ChassisPosition } from "./types.js";
 import {
   DRIVE_SPACING,
@@ -575,8 +578,9 @@ export function TruckDiagram<P extends ChassisPosition>({
   const fifthZ = fifthWheelZ(driveZs);
 
   const selected = positions.find((p) => p.id === selectedId) ?? null;
+  const pairView = usePairView(selected?.id ?? null);
   const focusPair = useMemo(() => {
-    if (!selected) return null;
+    if (!selected || !pairView.zoomed) return null;
     const pair = pairOf(selected, positions);
     if (pair.length < 2) return null;
     const pts = pair.map((m) => positionXYZ(m, axleById, axleZ));
@@ -588,9 +592,25 @@ export function TruckDiagram<P extends ChassisPosition>({
       span,
       ids: pair.map((m) => m.id),
     };
-  }, [selected, positions, axleById, axleZ]);
+  }, [selected, pairView.zoomed, positions, axleById, axleZ]);
 
   const detail = !!focusPair;
+  const { stepOut, stepIn } = pairView;
+
+  // Esc steps out too, for keyboard users (only while in a pair).
+  useEffect(() => {
+    if (!detail) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (escapeStepsOut(e)) stepOut();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [detail, stepOut]);
+
+  const choose = (p: ChassisPosition) => {
+    stepIn();
+    (onSelect as (p: ChassisPosition) => void)(p);
+  };
 
   return (
     <Canvas
@@ -600,6 +620,11 @@ export function TruckDiagram<P extends ChassisPosition>({
       camera={{ fov: FOV, position: [18, 11, -12], near: 0.4, far: 400 }}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener("webglcontextlost", () => onContextLost?.(), { once: true });
+      }}
+      // A click that hits no wheel (an orbit drag is not a click) steps out
+      // of the pair view to the whole truck.
+      onPointerMissed={() => {
+        if (detail) stepOut();
       }}
       className="rounded-lg"
       style={{ opacity: ready ? 1 : 0, transition: "opacity 180ms ease-out" }}
@@ -654,9 +679,9 @@ export function TruckDiagram<P extends ChassisPosition>({
               selected={selectedId === p.id}
               labelled={detail}
               // No toggle-off on the wheel: the second click of a double-click
-              // used to re-select→deselect and fight the camera. Esc, the
-              // close button, or clicking empty space deselect.
-              onSelect={onSelect as (p: ChassisPosition) => void}
+              // used to re-select→deselect and fight the camera. The close
+              // button deselects; empty space or Esc step out of the pair.
+              onSelect={choose}
             />
           );
         })}

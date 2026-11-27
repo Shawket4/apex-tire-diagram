@@ -1,6 +1,6 @@
 {
   "name": "apex-tire-diagram",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The Apex truck wheel diagram (2D map + optional 3D tanker rig), shared by the garage app and the office dashboard.",
   "license": "UNLICENSED",
   "type": "module",

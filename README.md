@@ -18,7 +18,7 @@ fetched, nothing is written. Each app maps its own data onto `DiagramAxle` /
 
 ```jsonc
 // package.json
-"apex-tire-diagram": "github:Shawket4/apex-tire-diagram#v0.1.0"
+"apex-tire-diagram": "github:Shawket4/apex-tire-diagram#v0.1.1"
 ```
 
 Peer dependencies: `react` 19, `react-dom` 19, `three`, `@react-three/fiber` 9,
@@ -47,7 +47,10 @@ import { TruckDiagram } from "apex-tire-diagram/3d"; // the 3D scene alone (pull
 - `WheelMap` — the top-down HTML map. Every wheel is a button; omit `onSelect` for a
   picture only, `compact` for the small layout preview.
 - `WheelLegend` — what the colours mean.
-- `TruckDiagram` (`apex-tire-diagram/3d`) — the 3D scene on its own.
+- `TruckDiagram` (`apex-tire-diagram/3d`) — the 3D scene on its own. Choosing a wheel of a
+  dual pair zooms in on that pair; clicking empty space or pressing Esc steps back out to the
+  whole truck. Stepping out keeps the wheel selected (the app's form stays open); choosing a
+  wheel goes back in.
 - Helpers: `positionLabel(p, axles, lang)` ("Tractor axle 2, left outer"),
   `wheelShortLabel`, `positionParts`, `buildMapLayout`, `wheelState`, `tireName`,
   `syntheticChassis(config)` / `wheelCount(config)` (mirror the garage's Rust planner),

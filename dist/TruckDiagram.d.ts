@@ -9,8 +9,10 @@
  *     physically occluded from every side angle; overhead-with-body-hidden is
  *     the only view where both have equal, stable click targets.
  *   - singles/spares just select (nothing occludes them).
- *   - closing the inspector → back to the solved full-truck fit. Clicking
- *     empty space does NOT deselect: it used to throw away a half-filled form.
+ *   - clicking empty space, or Esc, steps back out to the whole truck
+ *     (pairView.ts). It does NOT deselect — that used to throw away a
+ *     half-filled form — the wheel stays chosen; choosing a wheel goes back in.
+ *     Closing the inspector (deselecting) also returns to the full-truck fit.
  *   - camera glides on WALL-CLOCK time (rAF-starved webviews stall per-frame
  *     damping mid-glide).
  *
