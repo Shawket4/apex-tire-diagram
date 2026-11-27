@@ -10,8 +10,10 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
  *     physically occluded from every side angle; overhead-with-body-hidden is
  *     the only view where both have equal, stable click targets.
  *   - singles/spares just select (nothing occludes them).
- *   - closing the inspector → back to the solved full-truck fit. Clicking
- *     empty space does NOT deselect: it used to throw away a half-filled form.
+ *   - clicking empty space, or Esc, steps back out to the whole truck
+ *     (pairView.ts). It does NOT deselect — that used to throw away a
+ *     half-filled form — the wheel stays chosen; choosing a wheel goes back in.
+ *     Closing the inspector (deselecting) also returns to the full-truck fit.
  *   - camera glides on WALL-CLOCK time (rAF-starved webviews stall per-frame
  *     damping mid-glide).
  *
@@ -29,6 +31,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, Instances, Instance, OrbitControls, Outlines, RoundedBox, ContactShadows, Environment, Lightformer, Grid } from "@react-three/drei";
+import { escapeStepsOut, usePairView } from "./pairView.js";
 import { DRIVE_SPACING, DRIVE_Z0, DUAL_INNER, DUAL_OUTER, LIFT_RISE, NECK_BACK, NOSE_Z, RAIL_FRONT, RAIL_H, RAIL_TOP, RAIL_X, RAIL_Y, REAR_FRAME_Z, STEER_Z, SUB_H, SUB_X, SUB_Y, TANK_BODY_LEN, TANK_BOTTOM, TANK_HW, TANK_TOP, TANK_WHITE, TANK_Y, TANK_Z, TIRE_R, TRACK_SINGLE, TRAILER_LAST_Z, TRAILER_SPACING, cabGeo, fifthWheelZ, railBack, tankGeo, APEX_BLUE, APEX_ORANGE, } from "./dims.js";
 // ── palette ──────────────────────────────────────────────────────────────────
 const DARK = "#2b313b";
@@ -297,8 +300,9 @@ export function TruckDiagram({ axles, positions, selectedId, onSelect, onContext
     const trailerAxles = useMemo(() => axles.filter((a) => a.section === "trailer"), [axles]);
     const fifthZ = fifthWheelZ(driveZs);
     const selected = positions.find((p) => p.id === selectedId) ?? null;
+    const pairView = usePairView(selected?.id ?? null);
     const focusPair = useMemo(() => {
-        if (!selected)
+        if (!selected || !pairView.zoomed)
             return null;
         const pair = pairOf(selected, positions);
         if (pair.length < 2)
@@ -312,18 +316,40 @@ export function TruckDiagram({ axles, positions, selectedId, onSelect, onContext
             span,
             ids: pair.map((m) => m.id),
         };
-    }, [selected, positions, axleById, axleZ]);
+    }, [selected, pairView.zoomed, positions, axleById, axleZ]);
     const detail = !!focusPair;
+    const { stepOut, stepIn } = pairView;
+    // Esc steps out too, for keyboard users (only while in a pair).
+    useEffect(() => {
+        if (!detail)
+            return;
+        const onKey = (e) => {
+            if (escapeStepsOut(e))
+                stepOut();
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [detail, stepOut]);
+    const choose = (p) => {
+        stepIn();
+        onSelect(p);
+    };
     return (_jsxs(Canvas, { shadows: true, frameloop: "demand", dpr: [1, 1.5], camera: { fov: FOV, position: [18, 11, -12], near: 0.4, far: 400 }, onCreated: ({ gl }) => {
             gl.domElement.addEventListener("webglcontextlost", () => onContextLost?.(), { once: true });
+        }, 
+        // A click that hits no wheel (an orbit drag is not a click) steps out
+        // of the pair view to the whole truck.
+        onPointerMissed: () => {
+            if (detail)
+                stepOut();
         }, className: "rounded-lg", style: { opacity: ready ? 1 : 0, transition: "opacity 180ms ease-out" }, children: [_jsx("ambientLight", { intensity: 0.35 }), _jsx("directionalLight", { position: [9, 14, -7], intensity: 1.6, castShadow: true, "shadow-mapSize": [1024, 1024], "shadow-bias": -0.0002, "shadow-camera-left": -16, "shadow-camera-right": 16, "shadow-camera-top": 16, "shadow-camera-bottom": -16, "shadow-camera-far": 50 }), _jsx("directionalLight", { position: [-10, 7, 10], intensity: 0.45 }), _jsxs(Environment, { resolution: 256, frames: 1, children: [_jsx(Lightformer, { form: "rect", intensity: 2.2, position: [0, 12, 0], rotation: [-Math.PI / 2, 0, 0], scale: [26, 26, 1] }), _jsx(Lightformer, { form: "rect", intensity: 1.1, position: [14, 5, -6], rotation: [0, -Math.PI / 2.6, 0], scale: [16, 5, 1] }), _jsx(Lightformer, { form: "rect", intensity: 0.8, position: [-14, 4, 8], rotation: [0, Math.PI / 2.4, 0], scale: [14, 4, 1] }), _jsx(Lightformer, { form: "ring", intensity: 0.6, position: [0, 6, 16], scale: [9, 9, 1] })] }), _jsxs("group", { name: "rig-root", children: [!detail && _jsx(Tractor, { driveZs: driveZs }), !detail && trailerAxles.length > 0 && (_jsx(Trailer, { axles: trailerAxles, axleZ: axleZ, fifthZ: fifthZ })), !detail &&
                         axles.map((a) => (_jsx("group", { position: [0, TIRE_R + (a.is_lifted ? LIFT_RISE : 0), axleZ(a)], children: _jsxs("mesh", { rotation: [0, 0, Math.PI / 2], castShadow: true, children: [_jsx("cylinderGeometry", { args: [0.095, 0.095, 2.62, 16] }), _jsx("meshStandardMaterial", { color: CHASSIS, roughness: 0.6 })] }) }, a.id))), positions.map((p) => {
                         if (detail && !focusPair.ids.includes(p.id))
                             return null;
                         return (_jsx(Wheel, { pos: p, xyz: positionXYZ(p, axleById, axleZ), dimmed: false, selected: selectedId === p.id, labelled: detail, 
                             // No toggle-off on the wheel: the second click of a double-click
-                            // used to re-select→deselect and fight the camera. Esc, the
-                            // close button, or clicking empty space deselect.
-                            onSelect: onSelect }, p.id));
+                            // used to re-select→deselect and fight the camera. The close
+                            // button deselects; empty space or Esc step out of the pair.
+                            onSelect: choose }, p.id));
                     })] }), !detail && (_jsx(ContactShadows, { frames: 1, position: [0, 0.005, 3.4], scale: 38, resolution: 512, blur: 2.3, opacity: 0.36, far: 5, color: "#0f172a" }, positions.map((p) => (p.tire_id ? "1" : "0")).join(""))), _jsx(Grid, { position: [0, -0.002, 3.4], args: [60, 60], cellSize: 0.62, cellThickness: 0.55, cellColor: "#c7cfda", sectionSize: 3.1, sectionThickness: 1, sectionColor: "#aeb9c7", fadeDistance: 34, fadeStrength: 2.2, infiniteGrid: true }), _jsx(OrbitControls, { makeDefault: true, enableDamping: true, dampingFactor: 0.08, minDistance: 2, maxDistance: 70, maxPolarAngle: Math.PI / 2 - 0.03 }), _jsx(CameraRig, { focus: focusPair, onFirstFit: onFirstFit })] }));
 }

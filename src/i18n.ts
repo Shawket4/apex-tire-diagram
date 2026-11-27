@@ -51,7 +51,7 @@ export const messages = {
       "3d": "3D view",
       "unsupported": "This device cannot show the 3D view, so you are back on the simple drawing — everything works from it.",
       "failed": "The 3D view stopped, so you are back on the simple drawing — everything works from it.",
-      "hint3d": "Drag to turn the truck, press a wheel to choose it. If it is slow on this device, go back to the simple drawing."
+      "hint3d": "Drag to turn the truck, press a wheel to choose it. Press empty space or Esc to see the whole truck again. If it is slow on this device, go back to the simple drawing."
     }
   },
   "ar": {
@@ -97,7 +97,7 @@ export const messages = {
       "3d": "عرض ٣D",
       "unsupported": "الجهاز ده مش بيشغّل العرض الـ٣D، فرجّعناك للرسمة البسيطة — كل حاجة شغّالة منها.",
       "failed": "العرض الـ٣D وقف، فرجّعناك للرسمة البسيطة — كل حاجة شغّالة منها.",
-      "hint3d": "اسحب عشان تلف العربية، ودوس على الكاوتشة عشان تختارها. لو تقيل على الجهاز ارجع للرسمة البسيطة."
+      "hint3d": "اسحب عشان تلف العربية، ودوس على الكاوتشة عشان تختارها. دوس على مكان فاضي أو Esc عشان ترجع للعربية كلها. لو تقيل على الجهاز ارجع للرسمة البسيطة."
     }
   }
 } as const satisfies Record<"en" | "ar", Tree>;

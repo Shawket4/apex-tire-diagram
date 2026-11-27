@@ -48,7 +48,7 @@ export declare const messages: {
             readonly "3d": "3D view";
             readonly unsupported: "This device cannot show the 3D view, so you are back on the simple drawing — everything works from it.";
             readonly failed: "The 3D view stopped, so you are back on the simple drawing — everything works from it.";
-            readonly hint3d: "Drag to turn the truck, press a wheel to choose it. If it is slow on this device, go back to the simple drawing.";
+            readonly hint3d: "Drag to turn the truck, press a wheel to choose it. Press empty space or Esc to see the whole truck again. If it is slow on this device, go back to the simple drawing.";
         };
     };
     readonly ar: {
@@ -94,7 +94,7 @@ export declare const messages: {
             readonly "3d": "عرض ٣D";
             readonly unsupported: "الجهاز ده مش بيشغّل العرض الـ٣D، فرجّعناك للرسمة البسيطة — كل حاجة شغّالة منها.";
             readonly failed: "العرض الـ٣D وقف، فرجّعناك للرسمة البسيطة — كل حاجة شغّالة منها.";
-            readonly hint3d: "اسحب عشان تلف العربية، ودوس على الكاوتشة عشان تختارها. لو تقيل على الجهاز ارجع للرسمة البسيطة.";
+            readonly hint3d: "اسحب عشان تلف العربية، ودوس على الكاوتشة عشان تختارها. دوس على مكان فاضي أو Esc عشان ترجع للعربية كلها. لو تقيل على الجهاز ارجع للرسمة البسيطة.";
         };
     };
 };
